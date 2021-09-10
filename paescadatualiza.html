@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pães</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="home.html"><h2>Home</h2></a>
+    <h1>Pão - Cadastro</h1>
+
+    Nome: <input type="text" name="nome" id="nome"><br/><br/>
+    Descrição: <textarea name="desc" id="desc" cols="20" rows="5"></textarea><br/><br/>
+    Minutos para ficar pronto: <input type="number" name="min" id="min" min="1" value="1"><br/><br/>
+    <button onclick="enviar()">Cadastrar</button>
+    
+    <script>
+        let h1 = document.getElementsByTagName('h1')[0]
+        let botao = document.getElementsByTagName('button')[0]
+        
+        let parametros = new URLSearchParams(location.search)
+        var codigo = parametros.get('atualizar')
+
+        if (codigo) {
+            h1.innerText = 'Pão - Atualizar'
+            botao.innerText = 'Atualizar'
+            let api = 'http://localhost:8080/pao/' + codigo
+            fetch(api).then(function (response) {                
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                let pao = json
+                document.getElementById('nome').value = pao.nome
+                document.getElementById('desc').value = pao.desc
+                document.getElementById('min').value = pao.minutos
+            })
+        }
+
+        function enviar() {
+            let nome = document.getElementById('nome').value
+            let desc = document.getElementById('desc').value
+            let minutos = document.getElementById('min').value
+            if (!nome || !desc || !minutos) {
+                alert('Preencha todos os campos.')
+                return
+            }
+
+            let api = 'http://localhost:8080/pao'
+            let opcoes = {
+                method: codigo ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: codigo ? JSON.stringify({ codigo, nome, desc, minutos })
+                    : JSON.stringify({ nome, desc, minutos }),
+            }
+            fetch(api, opcoes).then(function (response) {
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                console.log(json)
+                location.href = 'paes.html'
+            })
+        }
+    </script>
+</body>
+</html>

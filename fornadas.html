@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pães</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <a href="home.html"><h2>Home</h2></a>
+    <h1>Fornadas - Cadastrar</h1>
+    <div id="paes" style="width: 720px;"></div>
+
+    <br />
+    <h1>Fornadas - Lista</h1>
+    <div class="fornadas"></div>
+    <br />
+
+
+    <script>
+        let tabela = document.getElementsByTagName('table')[0]
+        
+        mostrarPaes()
+        mostrarFornadas()
+        
+        function mostrarFornadas() {
+            let div = document.getElementsByClassName('fornadas')[0]
+            let api = 'http://localhost:8080/fornada/pao'
+            fetch(api).then(function (response) {
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                let fornadas = json
+
+                let tabela = document.createElement('table')
+                let tr1 = document.createElement('tr')
+                let th1 = document.createElement('th')
+                let th2 = document.createElement('th')
+                let th3 = document.createElement('th')
+                let th4 = document.createElement('th')
+                tr1.appendChild(th1)
+                tr1.appendChild(th2)
+                tr1.appendChild(th3)
+                tr1.appendChild(th4)
+                tabela.appendChild(tr1)
+                div.appendChild(tabela)
+
+                th1.innerHTML = 'Cód.'
+                th2.innerHTML = 'Pão'
+                th3.innerHTML = 'Descrição'
+                th4.innerHTML = 'Pronto em...'
+
+                for (let fornada of fornadas) {
+                    let tr = document.createElement('tr')
+                    let td1 = document.createElement('td')
+                    let td2 = document.createElement('td')
+                    let td3 = document.createElement('td')
+                    let td4 = document.createElement('td')
+
+                    tr.appendChild(td1)
+                    tr.appendChild(td2)
+                    tr.appendChild(td3)
+                    tr.appendChild(td4)
+
+                    tabela.appendChild(tr)
+
+                    td1.innerHTML = fornada.codigo
+                    td2.innerHTML = fornada.pao.nome
+                    td3.innerHTML = fornada.pao.desc
+                    td4.innerHTML = calculaTempo(fornada.prontoEm)
+                }
+            })
+        }
+
+        function mostrarPaes() {
+            let api = 'http://localhost:8080/pao'
+            fetch(api).then(function (response) {
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                let paes = json
+                for (let pao of paes) {
+                    let btnPao = document.createElement('button')
+                    btnPao.innerText = pao.nome
+                    btnPao.style = "margin-right: 20px; padding: 15px; font-size: 20px; font-weight: bold; border: 1px solid lightgray; border-radius: 50%"
+                    btnPao.onclick = function () { cadFornada(pao) }
+                    document.getElementById('paes').appendChild(btnPao)
+                }
+            })
+        }
+
+        function cadFornada(pao) {
+            let api = 'http://localhost:8080/fornada/pao/' + pao.codigo
+            let opcoes = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+            fetch(api, opcoes).then(function (response) {
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                let paes = json
+                location.reload()
+            })
+        }
+
+        function calculaTempo(tempo){
+            let dataTempo = new Date(tempo)
+
+            let dataAtual = new Date().getTime();
+
+            let dataTempoMs = dataTempo.getTime();
+
+            let dias, horas, minutos, secs;
+
+            let secRestante = ((dataTempoMs - dataAtual) / 1000);
+            if (secRestante <= 0) {
+                return `${colocaZero(dataTempo.getDate())}/${colocaZero(dataTempo.getMonth()+1)}/${dataTempo.getFullYear()} ${colocaZero(dataTempo.getHours())}:${colocaZero(dataTempo.getMinutes())}:${colocaZero(dataTempo.getSeconds())}`
+            }
+
+            dias = colocaZero(Math.floor(secRestante / 86400));
+            secRestante %= 86400;
+            horas = colocaZero(Math.floor(secRestante / 3600));
+            secRestante %= 3600;
+            minutos = colocaZero(Math.floor(secRestante / 60));
+            secs = colocaZero(Math.floor(secRestante % 60));
+
+            let resultado = ''
+            if (dias > 0) {
+                resultado += dias + ' dias '
+            }
+            resultado += `${horas}:${minutos}:${secs}`
+
+            return resultado;
+
+        }
+
+        function colocaZero(n) {
+            return (n < 10 && n >= 0 ? '0' : '') + n;
+        }   
+    </script>
+</body>
+</html>

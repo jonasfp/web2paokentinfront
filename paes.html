@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pães</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="home.html"><h2>Home</h2></a>
+    <h1>Pães - Lista</h1>
+    <table>
+        <tr>
+            <th>Cód.</th>
+            <th>Pão</th>
+            <th>Descrição</th>
+            <th>Minutos</th>
+            <th>Operações</th>
+        </tr>
+    </table>
+    <br/>
+    <a href="paescadatualiza.html"><button>Cadastrar</button></a>
+    
+    <script>
+        let tabela = document.getElementsByTagName('table')[0]
+        let api = 'http://localhost:8080/pao'
+        fetch(api).then(function (response) {
+            return response.json().catch(function (err) {
+                return {}
+            })
+        }).then(function (json) {
+            let paes = json
+            for (let pao of paes) {
+                let tr = document.createElement('tr')
+                let td1 = document.createElement('td')
+                let td2 = document.createElement('td')
+                let td3 = document.createElement('td')
+                let td4 = document.createElement('td')
+                let td5 = document.createElement('td')
+                tr.appendChild(td1)
+                tr.appendChild(td2)
+                tr.appendChild(td3)
+                tr.appendChild(td4)
+                tr.appendChild(td5)
+                tabela.appendChild(tr)
+
+                let atualizar = document.createElement('a')
+                atualizar.href = `paescadatualiza.html?atualizar=${pao.codigo}`
+                atualizar.innerText = 'atualizar'
+                atualizar.style = 'margin-right: 10px;'
+                
+                let remover = document.createElement('a')
+                remover.onclick = function () { fremover(pao.codigo) }
+                remover.href = '#'
+                remover.innerText = 'remover'
+                
+                td5.appendChild(atualizar)
+                td5.appendChild(remover)
+
+                td1.innerHTML = pao.codigo
+                td2.innerHTML = pao.nome
+                td3.innerHTML = pao.desc
+                td4.innerHTML = pao.minutos
+            }
+        })
+
+        function fremover(codigo) {
+            let api = 'http://localhost:8080/pao/' + codigo
+            let opcoes = { method: 'DELETE' }
+            fetch(api, opcoes).then(function (response) {
+                return response.json().catch(function (err) {
+                    return {}
+                })
+            }).then(function (json) {
+                console.log(json);
+            })
+            location.reload()
+        }
+    </script>
+</body>
+</html>
